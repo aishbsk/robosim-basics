@@ -1,7 +1,7 @@
 from robosim.core import RobotBase
 import unittest
 
-class TestRobotImpl(RobotBase):
+class RobotImplForTest(RobotBase):
     def get_joint_state(self):
         return {}
     
@@ -28,7 +28,7 @@ class TestRobotBase(unittest.TestCase):
 
     def test_init_valid_parameters(self):
         """Test constructor with valid parameters"""
-        robot = TestRobotImpl(
+        robot = RobotImplForTest(
             self.valid_robot_name,
             self.valid_num_joints,
             self.valid_joint_names,
@@ -44,7 +44,7 @@ class TestRobotBase(unittest.TestCase):
     def test_init_invalid_num_joints(self):
         """Test constructor with invalid number of joints"""
         with self.assertRaises(ValueError):
-            TestRobotImpl(
+            RobotImplForTest(
                 self.valid_robot_name,
                 -1,  # Invalid negative number
                 self.valid_joint_names,
@@ -55,7 +55,7 @@ class TestRobotBase(unittest.TestCase):
     def test_init_mismatched_joint_names(self):
         """Test constructor with mismatched joint names length"""
         with self.assertRaises(ValueError):
-            TestRobotImpl(
+            RobotImplForTest(
                 self.valid_robot_name,
                 3,  # Doesn't match length of joint_names
                 self.valid_joint_names,
@@ -67,7 +67,7 @@ class TestRobotBase(unittest.TestCase):
         """Test constructor with missing joint limits"""
         invalid_limits = {"joint1": (-1, 1)}  # Missing joint2
         with self.assertRaises(ValueError):
-            TestRobotImpl(
+            RobotImplForTest(
                 self.valid_robot_name,
                 self.valid_num_joints,
                 self.valid_joint_names,
