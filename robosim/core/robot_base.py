@@ -1,7 +1,7 @@
 """Abstract base class for robots"""
 
 import abc
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 
 
 class RobotBase(abc.ABC):

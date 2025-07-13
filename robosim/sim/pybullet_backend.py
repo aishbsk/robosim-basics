@@ -25,6 +25,7 @@ class PyBulletBackend:
         self.robot_id: Optional[int] = None
         self.movable_joints: List[int] = []
         self._logger = logging.getLogger(self.__class__.__name__)
+        self.connect()
 
     def __enter__(self):
         if not self.connect():
@@ -164,3 +165,73 @@ class PyBulletBackend:
             self.robot_id = None
         else:
             self._logger.info("disconnect() called but client_id is already None.")
+
+    def get_movable_joints(self, robot_id):
+        num_joints = p.getNumJoints(robot_id, physicsClientId=self.client_id)
+        movable_joints = []
+        for i in range(num_joints):
+            joint_info = p.getJointInfo(robot_id, i, physicsClientId=self.client_id)
+            joint_type = joint_info[2]
+            if joint_type in [p.JOINT_REVOLUTE, p.JOINT_PRISMATIC]:
+                movable_joints.append(i)
+        return movable_joints
+
+    def reset_joint_state(self, robot_id, joint_index, position, velocity):
+        """
+        Reset the state of a single joint (position and velocity).
+
+        Args:
+            robot_id: The unique ID of the robot.
+            joint_index: Index of the joint to reset.
+            position: Desired joint position.
+            velocity: Desired joint velocity.
+        """
+        p.resetJointState(
+            robot_id, joint_index, position, velocity, physicsClientId=self.client_id
+        )
+
+    def set_joint_motor_control(
+        self, robot_id, joint_index, control_mode="position", target=0.0
+    ):
+        """
+        Apply motor control to a joint.
+
+        Args:
+            robot_id: ID of the robot.
+            joint_index: Index of the joint to control.
+            control_mode: One of ["position", "velocity", "torque"].
+            target: Target value (position/velocity/torque depending on mode).
+        """
+        mode_map = {
+            "position": p.POSITION_CONTROL,
+            "velocity": p.VELOCITY_CONTROL,
+            "torque": p.TORQUE_CONTROL,
+        }
+
+        if control_mode not in mode_map:
+            raise ValueError(f"Unsupported control mode: {control_mode}")
+
+        p.setJointMotorControl2(
+            bodyUniqueId=robot_id,
+            jointIndex=joint_index,
+            controlMode=mode_map[control_mode],
+            targetPosition=target if control_mode == "position" else 0.0,
+            targetVelocity=target if control_mode == "velocity" else 0.0,
+            force=500.0,  # you can parameterize this later
+            physicsClientId=self.client_id,
+        )
+
+    def render(self):
+        # In GUI mode, rendering happens automatically; in DIRECT mode, this could be a no-op or support camera rendering
+        pass
+
+    def close(self):
+        """
+        Cleanly close the simulation.
+        """
+        if self.client_id is not None:
+            p.disconnect(physicsClientId=self.client_id)
+            self.client_id = None
+            self.robot_id = None
+        else:
+            self._logger.info("close() called but client_id is already None.")

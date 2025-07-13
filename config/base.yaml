@@ -1,0 +1,13 @@
+env:
+  name: simple_arm
+  episode_length: 100
+  sim: pybullet
+
+sim:
+  gui: true
+  timestep: 0.01
+
+robot:
+  name: simple_arm
+  urdf_path: robosim/models/simple_arm.urdf
+  start_pos: [0, 0, 0.1]
